@@ -98,19 +98,15 @@ SELECT * FROM dw_sales ORDER BY id DESC LIMIT 10;
 - Thêm nguồn dữ liệu: triển khai producer mới (ví dụ `src/producers/db_ingest.js`) để publish message cùng định dạng.
 - Scale: chạy nhiều worker cho từng bước để tăng throughput; cân nhắc retry/backoff cho các lỗi tạm thời.
 
-## Nội dung đã hoàn thành (tóm tắt)
+## Tiến độ & Phân công công việc
 
-- Producer CSV, worker Validate/Transform/Load, và kết nối RabbitMQ đã implement.
-- Các file CSV mẫu nằm trong `data/` để chạy thử.
-
- ## Thành viên nhóm
-|      Họ tên        | Branch  |
-| ------------------ | ------- |
-| **Phan Văn Thành** | `Thanh` |
-| **Trần Đức Cảnh**  | `Canh`  |
-| **Đỗ Huỳnh Tài**   | `Tai`   |
-| **Đỗ Thiên Sáng**  | `Sang`  |
-| **Dương Đình Hiếu**| `Hieu`  |
+| STT | Thành viên          | Module phụ trách    | Nhiệm vụ cụ thể                                                                                                  | Tiến độ           | Ghi chú                                |
+| --- | ------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- | -------------------------------------- |
+| 1   | **Phan Văn Thành**  | 🧩 Ingest (Extract) | - Đọc dữ liệu CSV / DB<br>- Publish message lên RabbitMQ<br>- Thiết lập exchange, queue, topology                | ✅ Hoàn thành      | Đã chạy thử với file CSV mẫu           |
+| 2   | **Đỗ Huỳnh Tài**    | ✅ Validate          | - Kiểm tra schema, email, số lượng, giá trị hợp lệ<br>- Forward hợp lệ sang `etl.transform`<br>- Lỗi → `etl.dlq` | 🟡 Đang thực hiện | Cần test regex email và price          |
+| 3   | **Trần Đức Cảnh**   | ⚙️ Transform        | - Chuẩn hoá format ngày/tiền<br>- Mapping category<br>- Tạo `order_line_id`, tính `total_price`                  | ⏳ Chuẩn bị        | Đợi Tài xong Validate để test pipeline |
+| 4   | **Đỗ Thiên Sáng**   | 🗄️ Load            | - Upsert dimension (customer/product)<br>- Insert fact_sales<br>- Idempotent bằng `messageId`                    | ⏳ Chuẩn bị        | Dựa vào schema MySQL đã có             |
+| 5   | **Dương Đình Hiếu** | 🧾 Log/Monitor      | - Ghi log từng bước ETL vào `etl_logs`<br>- Ghi lỗi / success / retry<br>- Theo dõi `q.dlq`                      | ⏳ Chuẩn bị        | Sẽ test cùng Sáng khi load hoạt động   |
 
 ## Hướng dẫn kéo project về (cho từng thành viên)
 
