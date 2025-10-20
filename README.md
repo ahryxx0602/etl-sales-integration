@@ -103,6 +103,39 @@ SELECT * FROM dw_sales ORDER BY id DESC LIMIT 10;
 - Producer CSV, worker Validate/Transform/Load, và kết nối RabbitMQ đã implement.
 - Các file CSV mẫu nằm trong `data/` để chạy thử.
 
----
+ ## Thành viên nhóm
+|      Họ tên        | Branch  |
+| ------------------ | ------- |
+| **Phan Văn Thành** | `Thanh` |
+| **Trần Đức Cảnh**  | `Canh`  |
+| **Đỗ Huỳnh Tài**   | `Tai`   |
+| **Đỗ Thiên Sáng**  | `Sang`  |
+| **Dương Đình Hiếu**| `Hieu`  |
 
-Nếu bạn muốn mình bổ sung sơ đồ kiến trúc (PNG/SVG), ví dụ payload message hoặc checklist deploy — cho biết, mình sẽ mở rộng README.
+## Hướng dẫn kéo project về (cho từng thành viên)
+
+git clone git@github.com:ahryxx0602/etl-sales-integration.git
+
+cd etl_sales
+
+### Kiểm tra danh sách nhánh
+git branch -a
+
+### Checkout về nhánh của mình
+
+git checkout <Tên_branch>
+
+Ví dụ: git checkout Canh
+
+### Cập nhật code mới nhất từ nhánh chính (nếu cần)
+
+git pull origin main
+
+### Khi hoàn thành, push lên branch cá nhân
+git add .
+git commit -m "Hoàn thành module của mình"
+git push origin <Tên_branch>
+
+💡 Mỗi người làm việc độc lập trên branch của mình, khi xong thì tạo Pull Request (PR) để merge vào main.
+
+---
