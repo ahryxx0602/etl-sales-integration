@@ -12,9 +12,7 @@ Mô tả ngắn: project này minh hoạ một pipeline ETL đơn giản bằng 
 - dotenv, pino (logger)
 
 ---
-
-
-## Cấu trúc chính (tóm tắt)
+## Cấu trúc chính
 
 - `src/producers/csv_ingest.js` — đọc CSV và publish message
 - `src/workers/validateWorker.js` — kiểm tra định dạng & trường bắt buộc
@@ -25,7 +23,28 @@ Mô tả ngắn: project này minh hoạ một pipeline ETL đơn giản bằng 
 - `.env.example`, `package.json`
 
 ---
+## 📦 Cấu trúc thư mục dự án
+📦etl-sales-integration
+ ┣ 📂data/                       # Chứa dữ liệu CSV mẫu để chạy thử
+ ┃ ┣ 📜orders_import_oct.csv     # Dữ liệu nhập hàng (Import)
+ ┃ ┣ 📜orders_pos_oct.csv        # Dữ liệu bán trực tiếp (POS)
+ ┃ ┗ 📜orders_web_oct.csv        # Dữ liệu bán online (Website)
+ ┣ 📂src/                        # Code chính của hệ thống ETL
+ ┃ ┣ 📂dev/
+ ┃ ┃ ┗ 📜sendTest.js             # Script test nhanh gửi message mẫu
+ ┃ ┣ 📂producers/
+ ┃ ┃ ┣ 📜csv_ingest.js           # Đọc file CSV và publish message lên RabbitMQ
+ ┃ ┃ ┗ 📜db_ingest.js            # (Tùy chọn) Đọc dữ liệu từ DB gốc
+ ┃ ┣ 📂workers/
+ ┃ ┃ ┣ 📜validateWorker.js       # Kiểm tra dữ liệu (Validate)
+ ┃ ┃ ┣ 📜transformWorker.js      # Chuẩn hoá, chuyển đổi (Transform)
+ ┃ ┃ ┗ 📜loadWorker.js           # Ghi dữ liệu vào MySQL (Load)
+ ┃ ┣ 📜config.js                 # Config chung (RabbitMQ, MySQL, paths,…)
+ ┃ ┣ 📜db.js                     # Module kết nối MySQL
+ ┃ ┣ 📜rabbit.js                 # Module kết nối RabbitMQ
+ ┗ ┗ 📜setup.js                  # Tạo exchange, queue, binding ban đầu
 
+---
 ## Biến môi trường (tạo `.env` từ `.env.example` nếu cần)
 
 Mẫu tối thiểu (.env):
@@ -41,6 +60,19 @@ CSV_DIR=data
 ```
 
 Lưu ý: nếu bạn dùng XAMPP, đảm bảo MySQL đang chạy và database `etl_sales` tồn tại.
+
+### Cài đặt RabbitMQ
+
+Bạn có thể chọn 1 trong 3 cách:
+- **Cách A (local):** Cài RabbitMQ + Erlang, bật Management plugin.  
+  UI: http://localhost:15672 (guest/guest)
+- **Cách B (Docker):**  
+  ```bash
+  docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 \
+    -e RABBITMQ_DEFAULT_USER=dev \
+    -e RABBITMQ_DEFAULT_PASS=devpass \
+    rabbitmq:3.13-management
+→ .env: RABBIT_URL=amqp://dev:devpass@localhost:5672
 
 ## Hướng dẫn chạy nhanh (PowerShell / CMD)
 
