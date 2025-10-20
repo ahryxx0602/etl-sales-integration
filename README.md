@@ -24,6 +24,7 @@ Mô tả ngắn: project này minh hoạ một pipeline ETL đơn giản bằng 
 
 ---
 ## 📦 Cấu trúc thư mục dự án
+```bash
 📦etl-sales-integration
  ┣ 📂data/                       # Chứa dữ liệu CSV mẫu để chạy thử
  ┃ ┣ 📜orders_import_oct.csv     # Dữ liệu nhập hàng (Import)
