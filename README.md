@@ -44,6 +44,7 @@ Mô tả ngắn: project này minh hoạ một pipeline ETL đơn giản bằng 
  ┃ ┣ 📜rabbit.js                 # Module kết nối RabbitMQ
  ┗ ┗ 📜setup.js                  # Tạo exchange, queue, binding ban đầu
 
+
 ---
 ## Biến môi trường (tạo `.env` từ `.env.example` nếu cần)
 
