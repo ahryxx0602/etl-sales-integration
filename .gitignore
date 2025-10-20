@@ -1,0 +1,44 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build
+dist/
+build/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# RabbitMQ management/temporary files (if any)
+*.pid
+
+# Optional: ignore local database files
+*.sqlite
+
+# Keep sample data in repo, so NOT ignoring /data/
+# If you want to ignore CSV samples, uncomment the next line
+# data/*.csv
