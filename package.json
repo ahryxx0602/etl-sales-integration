@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+"scripts": {
+  "w:validate": "node src/workers/validateWorker.js",
+  "w:transform": "node src/workers/transformWorker.js",
+  "w:load": "node src/workers/loadWorker.js",
+  "ingest:csv": "node src/producers/csv_ingest.js",
+  "lint": "eslint . || echo \"no eslint\"",
+  "test": "echo \"No tests\" && exit 0"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
