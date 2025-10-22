@@ -128,6 +128,27 @@ SELECT * FROM dw_sales ORDER BY id DESC LIMIT 10;
 - Dead Letter Queue (`etl.dlq`): chứa message lỗi để phân tích và retry.
 - Thêm nguồn dữ liệu: triển khai producer mới (ví dụ `src/producers/db_ingest.js`) để publish message cùng định dạng.
 - Scale: chạy nhiều worker cho từng bước để tăng throughput; cân nhắc retry/backoff cho các lỗi tạm thời.
+  
+## Phần của Tài
+
+### Validation Enhancements (validateWorker.js)
+
+**Các phần đã thực hiện:**
+
+1. **Regex Validation:**
+
+   - Email: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` - kiểm tra định dạng email hợp lệ
+   - Price: `/^(?:\d+)(?:\.\d{1,2})?$/` - chỉ cho phép số nguyên hoặc số thập phân tối đa 2 chữ số (ví dụ: 123, 123.45)
+
+2. **Stricter Schema Validation:**
+
+   - `qty`: Bắt buộc số nguyên dương (> 0), không chấp nhận 0, số âm, hoặc số thập phân
+   - `unit_price`: Phải > 0, định dạng theo regex price
+   - `customer_email`: Thêm trường mới, optional/nullable, với regex validation
+
+3. **CSV Mapping:**
+   - Map `customer_email` từ các cột: `customer_email` hoặc `email`
+   - Xử lý chuỗi rỗng `""` → `null` để tránh lỗi validation không cần thiết
 
 ## Tiến độ & Phân công công việc
 
