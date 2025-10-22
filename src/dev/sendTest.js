@@ -18,3 +18,4 @@ await publish(ch, CFG.ROUTING.VALIDATE, {
 console.log('✅ Sent test message');
 await ch.close();
 await conn.close();
+// trigger ci

@@ -4,7 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "setup": "node src/setup.js",
+    "w:validate": "node src/workers/validateWorker.js",
+    "w:transform": "node src/workers/transformWorker.js",
+    "w:load": "node src/workers/loadWorker.js",
+    "ingest:csv": "node src/producers/csv_ingest.js",
+    "lint": "eslint .",
+    "test": "echo 'No test specified' && exit 0",
+    "start": "node src/setup.js && node src/producers/csv_ingest.js",
+    "pm2:start": "pm2 start src/workers/validateWorker.js --name etl-validate && pm2 start src/workers/transformWorker.js --name etl-transform && pm2 start src/workers/loadWorker.js --name etl-load",
+    "pm2:restart": "pm2 restart etl-validate || true && pm2 restart etl-transform || true && pm2 restart etl-load || true",
+    "pm2:stop": "pm2 delete etl-validate etl-transform etl-load || true",
+    "pm2:save": "pm2 save"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +28,9 @@
     "mysql2": "^3.15.2",
     "pino": "^10.1.0",
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "eslint": "^9.38.0",
+    "pm2": "^5.4.2"
   }
 }

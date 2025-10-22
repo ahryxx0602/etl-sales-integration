@@ -70,10 +70,7 @@ Bạn có thể chọn 1 trong 3 cách:
   UI: http://localhost:15672 (guest/guest)
 - **Cách B (Docker):**  
   ```bash
-  docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 \
-    -e RABBITMQ_DEFAULT_USER=dev \
-    -e RABBITMQ_DEFAULT_PASS=devpass \
-    rabbitmq:3.13-management
+  docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672     -e RABBITMQ_DEFAULT_USER=dev     -e RABBITMQ_DEFAULT_PASS=devpass     rabbitmq:3.13-management
 → .env: RABBIT_URL=amqp://dev:devpass@localhost:5672
 
 ## Hướng dẫn chạy nhanh (PowerShell / CMD)

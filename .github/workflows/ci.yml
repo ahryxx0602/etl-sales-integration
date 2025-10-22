@@ -1,0 +1,110 @@
+name: CI - Lint & Smoke Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: etl_sales
+        ports: [ "3306:3306" ]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      rabbitmq:
+        image: rabbitmq:3.13-management
+        ports:
+          - "5672:5672"
+          - "15672:15672"
+        options: >-
+          --health-cmd="rabbitmq-diagnostics -q ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env for CI
+        run: |
+          cat << 'EOF' > .env
+          RABBIT_URL=amqp://guest:guest@localhost:5672
+          MYSQL_HOST=127.0.0.1
+          MYSQL_PORT=3306
+          MYSQL_USER=root
+          MYSQL_PASS=root
+          MYSQL_DB=etl_sales
+          CSV_DIR=./data
+          EOF
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Wait for MySQL ready
+        run: |
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -P 3306 -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
+              echo "MySQL is ready"; break
+            fi
+            echo "Waiting MySQL..."; sleep 2
+          done
+
+      - name: Initialize DB schema (optional)
+        run: |
+          echo "Create basic tables if needed"
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot etl_sales -e "
+            CREATE TABLE IF NOT EXISTS staging_order_lines (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              order_id VARCHAR(64),
+              sale_time VARCHAR(64),
+              customer_name VARCHAR(255),
+              customer_email VARCHAR(255),
+              product_category VARCHAR(255),
+              product_name VARCHAR(255),
+              sku VARCHAR(64),
+              quantity INT,
+              unit_price DECIMAL(12,2),
+              total_price DECIMAL(12,2),
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS dw_sales (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              order_line_id VARCHAR(64),
+              order_id VARCHAR(64),
+              sale_date DATE,
+              customer_email VARCHAR(255),
+              sku VARCHAR(64),
+              quantity INT,
+              unit_price DECIMAL(12,2),
+              total_price DECIMAL(12,2),
+              category VARCHAR(255),
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          "
+
+      - name: Quick setup Rabbit topology
+        run: node src/setup.js
+
+      - name: Smoke publish from CSV
+        run: node src/producers/csv_ingest.js
