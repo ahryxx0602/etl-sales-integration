@@ -49,7 +49,20 @@ const RowSchema = z.object({
     .nullable(),
   order_date: z.union([z.string(), z.date()]),
   item_sku: z.string().min(1),
-  item_name: z.string().optional().nullable(),
+  //item_name: z.string().optional().nullable(),
+  item_name: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z
+      .string()
+      .min(1, { message: "Tên sản phẩm không được để trống" })
+      .max(100, { message: "Tên sản phẩm không được quá 100 ký tự" })
+      .regex(/^[\p{L}\p{N}\s\-,.()]+$/u, {
+        message: "Tên sản phẩm chứa ký tự không hợp lệ",
+      })
+      .optional()
+      .nullable()
+  ),
+
   qty: Quantity,
   unit_price: Price,
   currency: z.string().default("VND"),
