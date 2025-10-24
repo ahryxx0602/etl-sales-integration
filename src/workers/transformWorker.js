@@ -41,13 +41,13 @@ ch.consume(CFG.QUEUES.TRANSFORM, async (msg) => {
       order_key: `${r.order_id}|${r.source_tag}`,
       store_code: String(r.store_code||'').trim().toUpperCase(),
       customer_phone: r.customer_phone ?? null,
-      order_ts: parseLocalDate(r.order_date),                // ✅
+      order_ts: parseLocalDate(r.order_date),         
       item_sku: String(r.item_sku||'').trim(),
       item_name: r.item_name ?? null,
       qty,
       unit_price: +price.toFixed(2),
       line_total: +(qty*price).toFixed(2),
-      currency: normCurrency(r.currency),                    // ✅
+      currency: normCurrency(r.currency),                   
       source_tag: r.source_tag
     };
 
