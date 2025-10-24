@@ -69,4 +69,3 @@ ch.consume(CFG.QUEUES.LOAD, async (msg) => {
 }, { noAck: false });
 
 log.info('loadWorker started');
-console.log('[load] upsert + rollup:', line.order_key);
