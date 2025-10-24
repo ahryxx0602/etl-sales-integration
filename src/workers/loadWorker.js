@@ -65,7 +65,7 @@ function toDateKey(order_ts) {
 
 async function upsertDimDate(order_ts) {
   const date = order_ts.slice(0, 10); // 'YYYY-MM-DD'
-  const [row] = await dw.query(
+  const [_row] = await dw.query(
     `INSERT INTO dim_date (date_key, date_value, year, month, day, dow, month_name)
      VALUES (
        DATE_FORMAT(?, '%Y%m%d')+0,

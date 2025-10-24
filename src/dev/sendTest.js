@@ -1,9 +1,9 @@
 import { getRabbit, publish } from '../rabbit.js';
 import { CFG } from '../config.js';
 
-const { conn, ch } = await getRabbit();
+const { _conn, ch } = await getRabbit();
 await publish(ch, CFG.ROUTING.VALIDATE, {
-  type: 'row',
+  type: '_row',
   order_id: 'TEST001',
   store_code: 'DN01',
   customer_phone: '0900000000',
@@ -17,5 +17,5 @@ await publish(ch, CFG.ROUTING.VALIDATE, {
 });
 console.log('✅ Sent test message');
 await ch.close();
-await conn.close();
+await _conn.close();
 // trigger ci

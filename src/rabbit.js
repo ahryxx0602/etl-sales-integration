@@ -2,8 +2,8 @@ import amqp from 'amqplib';
 import { CFG } from './config.js';
 
 export async function getRabbit() {
-  const conn = await amqp.connect(CFG.RABBIT_URL);
-  const ch = await conn.createChannel();
+  const _conn = await amqp.connect(CFG.RABBIT_URL);
+  const ch = await _conn.createChannel();
 
   // exchange chính + DLX
   await ch.assertExchange(CFG.EXCHANGE, 'direct', { durable: true });
@@ -30,7 +30,7 @@ export async function getRabbit() {
 
   await ch.bindQueue(CFG.QUEUES.DLQ, `${CFG.EXCHANGE}.dlx`, '');
 
-  return { conn, ch };
+  return { _conn, ch };
 }
 
 export async function publish(ch, routingKey, payload) {

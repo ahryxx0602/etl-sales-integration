@@ -8,7 +8,7 @@ const log = pino({ name: 'csv_ingest' });
 
 const dir = CFG.CSV_DIR;
 
-const { conn, ch } = await getRabbit();
+const { _conn, ch } = await getRabbit();
 try {
   const files = fs.readdirSync(dir).filter(f => f.endsWith('.csv'));
   for (const f of files) {
@@ -23,5 +23,5 @@ try {
     log.info({ file: full }, 'queued file for validate');
   }
 } finally {
-  await ch.close(); await conn.close();
+  await ch.close(); await _conn.close();
 }

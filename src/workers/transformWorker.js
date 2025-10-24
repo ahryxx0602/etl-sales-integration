@@ -26,7 +26,7 @@ function normCurrency(cur='VND') {
   return x === 'VNĐ' ? 'VND' : x;
 }
 
-const { conn, ch } = await getRabbit();
+const { _conn, ch } = await getRabbit();
 await ch.prefetch(20);
 
 ch.consume(CFG.QUEUES.TRANSFORM, async (msg) => {

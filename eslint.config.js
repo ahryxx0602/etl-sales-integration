@@ -13,7 +13,7 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
+      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
       'semi': ['error', 'always'],
       'quotes': ['error', 'single', { 'avoidEscape': true }]
     }
