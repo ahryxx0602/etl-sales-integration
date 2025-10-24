@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   deploy:
     runs-on: [ self-hosted, windows, etl-sales ]
@@ -12,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
@@ -19,7 +25,6 @@ jobs:
           node-version: 22
 
       - name: Write .env from Secrets
-        shell: pwsh
         run: |
           New-Item -Path ".env" -ItemType "file" -Force | Out-Null
           @"
@@ -45,7 +50,7 @@ jobs:
         run: |
           npm run pm2:stop
           npm run pm2:start
-          npm run pm2:save
+          npx pm2 save --force
 
       - name: Show PM2 status
         run: npx pm2 ls
