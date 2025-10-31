@@ -7,7 +7,7 @@ await publish(ch, CFG.ROUTING.VALIDATE, {
   order_id: 'TEST001',
   store_code: 'DN01',
   customer_phone: '0900000000',
-  order_date: '2025-10-20 10:00:00',
+  order_date: '2025-10-20 10:00:00', 
   item_sku: 'SKU-DEMO',
   item_name: 'Adapter 65W',
   qty: 2,

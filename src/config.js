@@ -6,15 +6,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const CFG = {
+  // RabbitMQ
   RABBIT_URL: process.env.RABBIT_URL,
+
+  // MySQL
   MYSQL: {
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT || 3306),
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASS || '',
-    database: process.env.MYSQL_DB,
+    // ưu tiên DB DW nếu có
+    database: process.env.MYSQL_DB_DW || process.env.MYSQL_DB,
   },
+
+  // CSV directory
   CSV_DIR: path.resolve(__dirname, '..', process.env.CSV_DIR || 'data'),
+
+  // RabbitMQ exchange + routing
   EXCHANGE: 'sales.etl',
   ROUTING: {
     VALIDATE: 'validate',
@@ -27,5 +35,5 @@ export const CFG = {
     TRANSFORM: 'etl.transform',
     LOAD: 'etl.load',
     DLQ: 'etl.dlq',
-  }
+  },
 };

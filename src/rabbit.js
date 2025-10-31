@@ -33,6 +33,7 @@ export async function getRabbit() {
   return { _conn, ch };
 }
 
+
 export async function publish(ch, routingKey, payload) {
   const ok = ch.publish(
     CFG.EXCHANGE,
