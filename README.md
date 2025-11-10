@@ -185,7 +185,7 @@ Kết quả mẫu:
 | 2   | **Đỗ Huỳnh Tài**    | Validate          | - Kiểm tra schema, email, số lượng, giá trị hợp lệ<br>- Forward sang `etl.transform`<br>- Lỗi → `etl.dlq`                           | ✅ Hoàn thành | Regex hoạt động đúng             |
 | 3   | **Trần Đức Cảnh**   | Transform        | - Chuẩn hoá format ngày/tiền<br>- Mapping category<br>- Tính `order_line_id`, `total_price`                                         |  ✅ Hoàn thành |   ✅ Đã transform thành công   |
 | 4   | **Đỗ Thiên Sáng**   | Load DW         | - Upsert dimension (store/product/date)<br>- Insert `fact_sales`<br>- Tối ưu index + view                                           | ⏳ Chuẩn bị   | Dựa vào schema DW đã có          |
-| 5   | **Dương Đình Hiếu** | Log/Monitor      | - Ghi log từng bước ETL vào DB<br>- Ghi lỗi / success / retry<br>- Xây dashboard thống kê                                           | ⏳ Chuẩn bị   | Sẽ test khi load ổn định         |
+| 5   | **Dương Đình Hiếu** | Log/Monitor      | - Ghi log từng bước ETL vào DB<br>- Ghi lỗi / success / retry<br>- Xây dashboard thống kê                                           | ✅ Hoàn thành   | ✅ Hoàn thànhkhi load ổn định         |
 
 
 ## Hướng dẫn kéo project về (cho từng thành viên)
