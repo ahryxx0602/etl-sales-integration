@@ -29,11 +29,17 @@ export const CFG = {
     TRANSFORM: 'transform',
     LOAD: 'load',
     DLQ: 'dlq',
+    CLEAN: 'clean' // thêm routing key cho clean
   },
   QUEUES: {
     VALIDATE: 'etl.validate',
     TRANSFORM: 'etl.transform',
     LOAD: 'etl.load',
     DLQ: 'etl.dlq',
+<<<<<<< HEAD
   },
+=======
+    CLEAN: 'clean_data_queue' // thêm queue clean
+  }
+>>>>>>> main
 };

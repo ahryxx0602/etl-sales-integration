@@ -24,9 +24,18 @@ export async function getRabbit() {
   });
   await ch.assertQueue(CFG.QUEUES.DLQ, { durable: true });
 
+  // --- THÊM KHAI BÁO QUEUE CLEAN ---
+  await ch.assertQueue(CFG.QUEUES.CLEAN, {
+    durable: true,
+    deadLetterExchange: `${CFG.EXCHANGE}.dlx`
+  });
+
   await ch.bindQueue(CFG.QUEUES.VALIDATE, CFG.EXCHANGE, CFG.ROUTING.VALIDATE);
   await ch.bindQueue(CFG.QUEUES.TRANSFORM, CFG.EXCHANGE, CFG.ROUTING.TRANSFORM);
   await ch.bindQueue(CFG.QUEUES.LOAD, CFG.EXCHANGE, CFG.ROUTING.LOAD);
+
+  // bind cho clean
+  await ch.bindQueue(CFG.QUEUES.CLEAN, CFG.EXCHANGE, CFG.ROUTING.CLEAN);
 
   await ch.bindQueue(CFG.QUEUES.DLQ, `${CFG.EXCHANGE}.dlx`, '');
 

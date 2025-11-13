@@ -12,7 +12,11 @@ const dw = await getDWPool(); // etl_dw (data warehouse)
 const { ch } = await getRabbit();
 await ch.prefetch(50);
 
+<<<<<<< HEAD
 /** --- 1. Lưu staging (etl_sales) --- **/
+=======
+/** 🧱 1️⃣ Upsert staging (etl_sales) **/
+>>>>>>> main
 async function upsertStaging(line) {
   const sql = `
     INSERT INTO staging_order_lines
@@ -48,7 +52,11 @@ async function upsertStaging(line) {
   await pool.query(sql, args);
 }
 
+<<<<<<< HEAD
 /** --- 2. Upsert Dimensions (DW) --- **/
+=======
+/** 🧭 2️⃣ Upsert Dimension — STORE **/
+>>>>>>> main
 async function upsertDimStore(store_code) {
   const [r] = await dw.query(
     `INSERT INTO dim_store (store_code)
@@ -59,22 +67,44 @@ async function upsertDimStore(store_code) {
   return r.insertId;
 }
 
+<<<<<<< HEAD
 async function upsertDimProduct(item_sku, item_name, category) {
   const [r] = await dw.query(
     `INSERT INTO dim_product (item_sku, item_name, category)
      VALUES (?, ?, ?)
+=======
+/** 🧭 3️⃣ Upsert Dimension — PRODUCT **/
+async function upsertDimProduct(item_sku, item_name = null) {
+  const [r] = await dw.query(
+    `INSERT INTO dim_product (item_sku, item_name)
+     VALUES (?, ?)
+>>>>>>> main
      ON DUPLICATE KEY UPDATE
        item_name = COALESCE(VALUES(item_name), item_name),
        category = COALESCE(VALUES(category), category),
        product_key = LAST_INSERT_ID(product_key)`,
     [item_sku, item_name, category]
   );
+<<<<<<< HEAD
   return r.insertId;
 }
 
 async function upsertDimDate(order_ts) {
   if (!order_ts) return null;
   const date = order_ts.slice(0, 10);
+=======
+  return r.insertId; // product_key
+}
+
+/** 🧭 4️⃣ Upsert Dimension — DATE **/
+function toDateKey(order_ts) {
+  const d = order_ts.slice(0, 10).replace(/-/g, ''); // 'YYYYMMDD'
+  return Number(d);
+}
+
+async function upsertDimDate(order_ts) {
+  const date = order_ts.slice(0, 10); // 'YYYY-MM-DD'
+>>>>>>> main
   const [_] = await dw.query(
     `INSERT INTO dim_date (date_key, date_value, year, month, day, dow, month_name)
      VALUES (
@@ -92,11 +122,26 @@ async function upsertDimDate(order_ts) {
   return Number(date.replace(/-/g, ''));
 }
 
+<<<<<<< HEAD
 /** --- 3. Insert Fact (DW) --- **/
 async function insertFact(line) {
   const store_key = await upsertDimStore(line.store_code);
   const product_key = await upsertDimProduct(line.item_sku, line.item_name, line.category);
   const date_key = await upsertDimDate(line.order_ts);
+=======
+/** 🚀 5️⃣ Insert Fact_Sales **/
+async function insertFact(line) {
+  const store_code = String(line.store_code || '').trim().toUpperCase();
+  const product_sku = String(line.item_sku || '').trim();
+  const product_name = line.item_name ?? null;
+  const date_key = toDateKey(line.order_ts);
+
+  const [store_key, product_key] = await Promise.all([
+    upsertDimStore(store_code),
+    upsertDimProduct(product_sku, product_name),
+    upsertDimDate(line.order_ts)
+  ]).then(([s, p]) => [s, p]);
+>>>>>>> main
 
   await dw.query(
     `INSERT INTO fact_sales
@@ -123,7 +168,11 @@ async function insertFact(line) {
   );
 }
 
+<<<<<<< HEAD
 /** --- 4. Consumer chính --- **/
+=======
+/** ⚙️ Worker consume queue **/
+>>>>>>> main
 ch.consume(
   CFG.QUEUES.LOAD,
   async (msg) => {
@@ -141,8 +190,13 @@ ch.consume(
 
       log.info({ order_key: line.order_key, sku: line.item_sku }, '[load] staging + DW ok');
     } catch (e) {
+<<<<<<< HEAD
       log.error({ err: e.message, line }, 'load failed');
       ch.nack(msg, false, false); // gửi vào DLQ
+=======
+      log.error(e, 'load failed');
+      ch.nack(msg, false, false);
+>>>>>>> main
     }
   },
   { noAck: false }
