@@ -15,7 +15,11 @@
     "pm2:start": "pm2 start src/workers/validateWorker.js --name etl-validate && pm2 start src/workers/transformWorker.js --name etl-transform && pm2 start src/workers/loadWorker.js --name etl-load",
     "pm2:restart": "pm2 restart etl-validate || true && pm2 restart etl-transform || true && pm2 restart etl-load || true",
     "pm2:stop": "pm2 delete etl-validate etl-transform etl-load || true",
-    "pm2:save": "pm2 save"
+    "pm2:save": "pm2 save",
+    "start:transform": "node src/workers/transformWorker.js",
+    "send:test": "node src/send_transform_test.js",
+    "consume:clean": "node src/consume_clean_test.js",
+    "setup:queues": "node -e \"import('./src/rabbit.js').then(m=>m.getRabbit().then(({_conn,ch})=>{console.log('ok');ch.close();_conn.close()}))\""
   },
   "keywords": [],
   "author": "",

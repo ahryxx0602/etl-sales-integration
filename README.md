@@ -183,7 +183,7 @@ Kết quả mẫu:
 | --- | ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- |
 | 1   | **Phan Văn Thành**  | Ingest + Load DW | - Đọc dữ liệu CSV/DB<br>- Publish message lên RabbitMQ<br>- Thiết lập exchange, queue, topology<br>- Xây dựng Star Schema + Load DW | ✅ Hoàn thành | Dữ liệu đã ETL thành công đến DW |
 | 2   | **Đỗ Huỳnh Tài**    | Validate          | - Kiểm tra schema, email, số lượng, giá trị hợp lệ<br>- Forward sang `etl.transform`<br>- Lỗi → `etl.dlq`                           | ✅ Hoàn thành | Regex hoạt động đúng             |
-| 3   | **Trần Đức Cảnh**   | Transform        | - Chuẩn hoá format ngày/tiền<br>- Mapping category<br>- Tính `order_line_id`, `total_price`                                         |  ✅ Hoàn thành |   ✅ Đã transform thành công   |
+| 3   | **Nguyễn Đức Cảnh**   | Transform        | - Chuẩn hoá format ngày/tiền<br>- Mapping category<br>- Tính `order_line_id`, `total_price`                                         |  ✅ Hoàn thành |   ✅ Đã transform thành công   |
 | 4   | **Đỗ Thiên Sáng**   | Load DW         | - Upsert dimension (store/product/date)<br>- Insert `fact_sales`<br>- Tối ưu index + view                                           | ⏳ Chuẩn bị   | Dựa vào schema DW đã có          |
 | 5   | **Dương Đình Hiếu** | Log/Monitor      | - Ghi log từng bước ETL vào DB<br>- Ghi lỗi / success / retry<br>- Xây dashboard thống kê                                           | ✅ Hoàn thành   | ✅ Hoàn thànhkhi load ổn định         |
 
