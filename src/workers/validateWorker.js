@@ -11,7 +11,7 @@ const log = pino({ name: "validateWorker" });
 const CONSTANTS = {
   PREFETCH_COUNT: 10,
   MAX_ITEM_NAME_LENGTH: 100,
-  MAX_PRICE: 1000000000, // 1 tỷ VND
+  MAX_PRICE: 100000000,
 };
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const priceRegex = /^(?:\d+)(?:\.\d{1,2})?$/;
