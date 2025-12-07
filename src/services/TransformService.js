@@ -1,6 +1,7 @@
 import { addVietnameseAccentsToName, fixProductName } from '../utils/vietnameseUtils.js';
 import { DEFAULT_CURRENCY, SOURCE_TYPE } from '../constants/etlConstants.js';
 import { validateOrderData } from '../schemas/orderSchema.js';
+import { normalizeQty, normalizePrice, normalizeEmail, normalizeCurrency } from '../utils/dataNormalizers.js';
 
 /**
  * @typedef {import('../types/etlTypes.js').RawOrderData} RawOrderData
@@ -44,16 +45,6 @@ export class TransformService {
     if (!productName) return null;
     let name = String(productName).trim();
     
-    // Chuẩn hóa tên sản phẩm
-    const mappings = {
-      'laptop': 'Laptop',
-      'điện thoại': 'Điện thoại',
-      'tai nghe': 'Tai nghe',
-      'bluetooth': 'Bluetooth',
-      'dell': 'Dell',
-      'samsung': 'Samsung',
-    };
-    
     // Viết hoa chữ cái đầu
     name = name.replace(/\b\w/g, (char) => char.toUpperCase());
     
@@ -94,18 +85,26 @@ export class TransformService {
    * }
    */
   transformOrderData(rawData, sourceType = SOURCE_TYPE.OLD_DB) {
+    // Normalize dữ liệu trước khi validate (sửa các lỗi format có thể sửa được)
+    // Nếu normalize trả về null, giữ nguyên giá trị gốc để validation báo lỗi rõ ràng
+    const normalizedQty = normalizeQty(rawData.qty);
+    const normalizedPrice = normalizePrice(rawData.unit_price);
+    const normalizedEmail = rawData.customer_email ? normalizeEmail(rawData.customer_email) : null;
+    const normalizedCurrency = normalizeCurrency(rawData.currency, DEFAULT_CURRENCY);
+
     // Chuẩn bị dữ liệu cho validation (map các field names khác nhau)
+    // Sử dụng giá trị đã normalize nếu có, nếu không thì dùng giá trị gốc
     const dataToValidate = {
       order_code: rawData.order_code || rawData.order_id,
       store_code: rawData.store_code,
       customer_phone: rawData.customer_phone,
-      customer_email: rawData.customer_email,
+      customer_email: normalizedEmail !== null ? normalizedEmail : rawData.customer_email, // Sử dụng email đã normalize hoặc giá trị gốc
       order_date: rawData.order_date,
       item_sku: rawData.item_sku || rawData.sku,
       item_name: rawData.item_name || rawData.product_name,
-      qty: rawData.qty,
-      unit_price: rawData.unit_price,
-      currency: rawData.currency || DEFAULT_CURRENCY,
+      qty: normalizedQty !== null ? normalizedQty : rawData.qty, // Sử dụng qty đã normalize hoặc giá trị gốc
+      unit_price: normalizedPrice !== null ? normalizedPrice : rawData.unit_price, // Sử dụng price đã normalize hoặc giá trị gốc
+      currency: normalizedCurrency, // Currency luôn có giá trị mặc định
       store_name: rawData.store_name,
       customer_name: rawData.customer_name,
       product_name: rawData.product_name,

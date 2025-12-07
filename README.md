@@ -4,6 +4,12 @@
 
 Hệ thống ETL (Extract, Transform, Load) được xây dựng để xử lý và chuẩn hóa dữ liệu giao dịch bán hàng từ nhiều nguồn khác nhau (CSV, Database) cho cửa hàng thiết bị điện tử. Hệ thống sử dụng RabbitMQ để tách biệt các bước xử lý, đảm bảo tính tin cậy, khả năng mở rộng và dễ bảo trì.
 
+**Cập nhật mới nhất:**
+- ✅ **Gộp utility scripts**: Tất cả các script PowerShell đã được gộp vào `etl-utils.ps1` với menu tương tác
+- ✅ **Normalize dữ liệu**: Tự động sửa các lỗi format (price, quantity, email, date) trước khi validate
+- ✅ **Mapping data**: Dữ liệu mapping từ CSV đã được gộp vào `sql/03_insert_fake_data.sql`
+- ✅ **Cải thiện encoding**: Đảm bảo UTF-8 encoding đúng ở tất cả các layer
+
 ## ✨ Tính năng chính
 
 - 🔄 **Pipeline ETL hoàn chỉnh**: Extract → Validate → Transform → Load
@@ -95,7 +101,31 @@ RABBITMQ_URL=amqp://guest:guest@localhost:5672
 
 ### Bước 4: Tạo databases và Fake Data
 
-#### Cách nhanh nhất (Khuyến nghị):
+#### Cách 1: Sử dụng PowerShell Scripts (Khuyến nghị cho Windows)
+
+**Tự động setup đầy đủ:**
+```powershell
+# Script tự động tìm MySQL, đọc từ .env, và chạy tất cả
+.\setup-databases.ps1
+```
+
+**Hoặc chạy từng bước:**
+```powershell
+# Bước 1: Tạo databases và tables (không có dữ liệu)
+.\run-sql.ps1 sql\00_setup_all.sql
+
+# Bước 2: Insert fake data với nhiều lỗi để test validation và transform
+.\run-sql.ps1 sql\03_insert_fake_data.sql
+```
+
+**Lưu ý về PowerShell scripts:**
+- Scripts tự động tìm MySQL trong PATH hoặc các đường dẫn thông thường
+- Tự động đọc `MYSQL_USER`, `MYSQL_PASS`, `MYSQL_HOST` từ file `.env` nếu có
+- Nếu không có `.env`, sẽ hỏi password khi chạy (an toàn nhất)
+- Nếu MySQL không có password: `.\setup-databases.ps1 -NoPassword`
+- Xem chi tiết: `SETUP_POWERSHELL.md`
+
+#### Cách 2: Sử dụng MySQL Command Line (Linux/Mac)
 
 ```bash
 # Bước 1: Tạo databases và tables (không có dữ liệu)
@@ -244,8 +274,12 @@ npm run import:sample
 
 ### 3. Transform (Chuẩn hóa)
 
-- Chuẩn hóa format ngày tháng → `YYYY-MM-DD`
-- Chuẩn hóa tiền tệ (VND, USD, EUR...)
+- **Normalize dữ liệu trước khi validate** (tự động sửa các lỗi format):
+  - `unit_price`: Loại bỏ dấu chấm/phẩy (`22.000.000` → `22000000`)
+  - `qty`: Chuyển chữ thành số (`two` → `2`), làm tròn số thập phân
+  - `customer_email`: Sửa email thiếu TLD (`tranthihoa@email` → `tranthihoa@email.com`)
+  - `currency`: Chuẩn hóa currency (`vnd` → `VND`)
+- Chuẩn hóa format ngày tháng → `YYYY-MM-DD HH:mm:ss` (hỗ trợ nhiều format)
 - Chuẩn hóa SKU và tên sản phẩm
 - Tính toán `order_line_id` và `total_price`
 - Mapping category
@@ -253,8 +287,9 @@ npm run import:sample
 
 **Files liên quan:**
 - `src/services/TransformService.js`
+- `src/utils/dataNormalizers.js` - Normalize dữ liệu trước khi validate
 - `src/utils/vietnameseUtils.js`
-- `src/utils/dateUtils.js`
+- `src/utils/dateUtils.js` - Hỗ trợ nhiều format date
 - `src/schemas/orderSchema.js` (Joi validation schema)
 
 ### 4. Load (Tải vào DW)
@@ -295,17 +330,24 @@ npm run import:sample
 
 ## 🔍 Validation Rules
 
-| Trường | Rule |
-|--------|------|
-| `store_code` | 1-10 ký tự, không rỗng |
-| `customer_phone` | 10-11 chữ số, có thể null |
-| `customer_email` | Format email hợp lệ, có thể null |
-| `order_code` | Không rỗng |
-| `item_sku` | 1-20 ký tự, không rỗng |
-| `item_name` | Không rỗng, ≤ 100 ký tự |
-| `qty` | Số nguyên dương (> 0) |
-| `unit_price` | Số dương (> 0, ≤ 100,000,000) |
-| `order_date` | Format datetime hợp lệ |
+| Trường | Rule | Normalize |
+|--------|------|-----------|
+| `store_code` | 1-10 ký tự, không rỗng | - |
+| `customer_phone` | 10-11 chữ số, có thể null | - |
+| `customer_email` | Format email hợp lệ, có thể null | Tự động thêm `.com` nếu thiếu TLD |
+| `order_code` | Không rỗng | - |
+| `item_sku` | 1-20 ký tự, không rỗng | - |
+| `item_name` | Không rỗng, ≤ 100 ký tự | - |
+| `qty` | Số nguyên dương (> 0) | Chuyển chữ thành số (`two` → `2`), làm tròn số thập phân |
+| `unit_price` | Số dương (> 0, ≤ 100,000,000) | Loại bỏ dấu chấm/phẩy (`22.000.000` → `22000000`) |
+| `order_date` | Format datetime hợp lệ | Hỗ trợ nhiều format: `DD/MM/YYYY`, `DD-MM-YYYY`, `YYYY-MM-DD`, etc. |
+| `currency` | VND, USD, EUR, etc. | Chuẩn hóa thành chữ hoa (`vnd` → `VND`) |
+
+**Lưu ý**: Hệ thống tự động normalize dữ liệu trước khi validate để sửa các lỗi format có thể sửa được:
+- **Price**: Loại bỏ dấu chấm/phẩy (`22.000.000` → `22000000`)
+- **Quantity**: Chuyển chữ thành số (`two` → `2`), làm tròn số thập phân
+- **Email**: Sửa email thiếu TLD (`tranthihoa@email` → `tranthihoa@email.com`)
+- **Date**: Hỗ trợ nhiều format (`DD/MM/YYYY`, `DD-MM-YYYY`, `YYYY-MM-DD`, etc.)
 
 ## 🐰 RabbitMQ Topology
 
@@ -453,6 +495,24 @@ Xem các file markdown trong thư mục gốc:
 - Xem chi tiết trong `sql/README.md`
 
 ### Reset dữ liệu để test lại
+
+**PowerShell (Windows):**
+```powershell
+# Reset và reload tất cả (old_db + new_db)
+.\etl-utils.ps1 reset-and-reload
+
+# Hoặc sử dụng menu tương tác
+.\etl-utils.ps1
+# Chọn option 6
+
+# Chỉ truncate new_db (giữ nguyên old_db)
+.\run-sql.ps1 sql\05_utility_truncate.sql
+
+# Chỉ truncate old_db (giữ nguyên new_db)
+.\run-sql.ps1 sql\06_utility_truncate_old_db.sql
+```
+
+**MySQL Command Line (Linux/Mac):**
 ```bash
 # Xóa dữ liệu trong new_db (giữ nguyên old_db)
 mysql -u root -p < sql/05_utility_truncate.sql
@@ -512,6 +572,11 @@ Sau đó uncomment các bước deploy trong file `cd.yml`.
   - Hướng dẫn setup databases
   - Chi tiết về fake data và các loại lỗi
   - Troubleshooting SQL
+- **PowerShell Setup**: Xem `SETUP_POWERSHELL.md` để biết chi tiết về:
+  - Cách sử dụng PowerShell scripts
+  - Tự động tìm MySQL
+  - Đọc từ file `.env`
+  - Xử lý password
 
 ### Tài liệu ngoài
 - [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)

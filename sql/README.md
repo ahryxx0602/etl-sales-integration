@@ -212,10 +212,10 @@ source sql/04_migrate_etl_logs.sql;
   - Có foreign keys và indexes
 
 ### `03_insert_fake_data.sql`
-- **Mục đích**: Insert nhiều fake data với các lỗi để test validation và transform
+- **Mục đích**: Insert nhiều fake data với các lỗi để test validation và transform + Dữ liệu mapping từ CSV
 - **Chức năng**:
-  - Insert 15 stores (5 có lỗi chính tả)
-  - Insert 30 customers (15 có lỗi chính tả/email)
+  - Insert 15 stores (5 có lỗi chính tả) + 7 stores từ CSV (DN01-DN03, QN01-QN04)
+  - Insert 30 customers (15 có lỗi chính tả/email) + 17 customers từ CSV
   - Insert 40 products (20 có lỗi chính tả)
   - Insert 50 orders (35 có lỗi định dạng ngày)
   - Insert 100 order items (nhiều lỗi: tiền tệ, số lượng, currency, tên sản phẩm)
@@ -226,6 +226,10 @@ source sql/04_migrate_etl_logs.sql;
   - ✅ Số lượng sai: chữ, số thập phân
   - ✅ Currency sai: chữ thường, loại tiền sai
   - ✅ Kết hợp nhiều lỗi
+- **Mapping data từ CSV**:
+  - ✅ 7 stores: DN01, DN02, DN03 (Đà Nẵng), QN01, QN02, QN03, QN04 (Quy Nhơn)
+  - ✅ 17 customers với phone numbers từ CSV files
+  - ✅ Giúp lookup service tìm thấy store_name và customer_name khi xử lý CSV
 
 ### `04_migrate_etl_logs.sql`
 - **Mục đích**: Đảm bảo bảng etl_logs có đầy đủ các cột
@@ -240,6 +244,18 @@ source sql/04_migrate_etl_logs.sql;
   - Truncate tất cả tables trong `new_db`
   - Giữ nguyên cấu trúc tables
   - **Lưu ý**: Chỉ xóa dữ liệu trong new_db, không ảnh hưởng old_db
+
+### `06_utility_truncate_old_db.sql`
+- **Mục đích**: Xóa dữ liệu trong old_db để test lại ETL process
+- **Chức năng**:
+  - Truncate tất cả tables trong `old_db` (old_stores, old_customers, old_products, old_orders, old_order_items, raw_orders)
+  - Giữ nguyên cấu trúc tables
+  - **Lưu ý**: Chỉ xóa dữ liệu trong old_db, không ảnh hưởng new_db
+
+### `07_add_csv_mapping_data.sql` (DEPRECATED)
+- **⚠️ LƯU Ý**: File này đã được gộp vào `03_insert_fake_data.sql`
+- **Mục đích**: (Đã gộp vào file 03) Thêm dữ liệu mapping từ CSV vào old_db
+- **Không cần chạy riêng**: Dữ liệu mapping đã được tự động thêm khi chạy `03_insert_fake_data.sql`
 
 ## 🗄️ Cấu trúc Databases
 

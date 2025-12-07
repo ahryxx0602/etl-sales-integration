@@ -10,20 +10,6 @@ router.use('/process', processRoutes);
 router.use('/', dataRoutes);
 router.use('/rabbitmq', rabbitMQRoutes);
 
-// Debug: Log all registered routes
-console.log('  ETL Routes registered:');
-console.log('  POST /api/etl/process/old-db');
-console.log('  POST /api/etl/process/csv');
-console.log('  POST /api/etl/process/csv-folder');
-console.log('  POST /api/etl/process/raw-orders');
-console.log('  GET  /api/etl/stats');
-console.log('  GET  /api/etl/logs');
-console.log('  GET  /api/etl/stores');
-console.log('  GET  /api/etl/customers');
-console.log('  GET  /api/etl/products');
-console.log('  GET  /api/etl/orders');
-console.log('  GET  /api/etl/order-items');
-
 // API Info route - Đặt CUỐI CÙNG để không conflict với các routes khác
 router.get('/', (req, res) => {
   res.json({

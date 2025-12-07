@@ -11,15 +11,25 @@ dayjs.extend(utc);
  */
 const DATE_FORMATS = [
   'YYYY-MM-DD HH:mm:ss',
+  'YYYY-MM-DD HH:mm',      // Thiếu giây
   'YYYY-MM-DD',
   'DD/MM/YYYY HH:mm:ss',
+  'DD/MM/YYYY HH:mm',      // Thiếu giây
   'DD/MM/YYYY',
   'DD-MM-YYYY HH:mm:ss',
+  'DD-MM-YYYY HH:mm',      // Thiếu giây
   'DD-MM-YYYY',
   'YYYY/MM/DD HH:mm:ss',
+  'YYYY/MM/DD HH:mm',      // Thiếu giây
   'YYYY/MM/DD',
+  'DD.MM.YYYY HH:mm:ss',
+  'DD.MM.YYYY HH:mm',      // Thiếu giây
   'DD.MM.YYYY',
+  'YYYY.MM.DD HH:mm:ss',
+  'YYYY.MM.DD HH:mm',      // Thiếu giây
   'YYYY.MM.DD',
+  'MM-DD-YYYY',            // Format Mỹ
+  'MM/DD/YYYY',
 ];
 
 /**

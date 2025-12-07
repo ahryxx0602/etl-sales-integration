@@ -4,6 +4,21 @@
  */
 
 /**
+ * Đảm bảo charset UTF-8 cho connection trước khi query
+ * @param {Object} pool - MySQL pool
+ * @returns {Promise<void>}
+ */
+export async function ensureUtf8Charset(pool) {
+  try {
+    await pool.query("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
+    await pool.query("SET CHARACTER SET utf8mb4");
+    await pool.query("SET character_set_connection=utf8mb4");
+  } catch (error) {
+    // Ignore error nếu đã set rồi
+  }
+}
+
+/**
  * Thực hiện upsert và trả về ID
  * 
  * @param {Object} pool - MySQL pool
@@ -24,6 +39,9 @@
  */
 export async function upsertAndGetId(pool, table, keyField, keyValue, data, options = {}) {
   const { updateFields, idField = 'id' } = options;
+  
+  // Đảm bảo charset UTF-8 trước khi query
+  await ensureUtf8Charset(pool);
   
   // Tạo danh sách fields và values
   const fields = Object.keys(data);
@@ -90,6 +108,7 @@ export async function upsertAndGetId(pool, table, keyField, keyValue, data, opti
  * );
  */
 export async function paginateQuery(pool, baseQuery, countQuery, params, limit, offset) {
+  await ensureUtf8Charset(pool);
   const query = `${baseQuery} LIMIT ? OFFSET ?`;
   const queryParams = [...params, limit, offset];
   
@@ -124,6 +143,7 @@ export async function paginateQuery(pool, baseQuery, countQuery, params, limit, 
  * );
  */
 export async function queryWithFilters(pool, baseQuery, countQuery, filters, limit, offset) {
+  await ensureUtf8Charset(pool);
   const whereConditions = [];
   const params = [];
   

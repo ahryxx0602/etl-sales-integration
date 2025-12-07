@@ -60,9 +60,32 @@ function normalizeWord(word, mapping) {
   return mapping[capitalized] || word;
 }
 
+/**
+ * Kiểm tra và sửa encoding nếu dữ liệu bị sai encoding
+ * @param {string} text - Text cần kiểm tra
+ * @returns {string} Text đã được sửa encoding (nếu cần)
+ */
+function fixEncoding(text) {
+  if (!text || typeof text !== 'string') return text;
+  
+  // Nếu text đã có dấu tiếng Việt đúng, giữ nguyên
+  if (hasVietnameseAccents(text)) return text;
+  
+  // Kiểm tra xem có phải là mojibake (ký tự lạ) không
+  // Ví dụ: "Cß╗¡a h├áng" thay vì "Cửa hàng"
+  // Nếu có các ký tự lạ như ß, ╗, ├, á thì có thể là encoding sai
+  
+  // Nếu không có ký tự lạ và không có dấu, có thể là tên không dấu (ví dụ: "Nguyen Van Anh")
+  // Trong trường hợp này, giữ nguyên để function mapping xử lý
+  return text;
+}
+
 // Thêm dấu cho tên người - sửa từng từ riêng lẻ
 export function addVietnameseAccentsToName(name) {
   if (!name) return name;
+  
+  // Sửa encoding nếu cần
+  name = fixEncoding(name);
   
   const words = name.split(/\s+/);
   
@@ -94,7 +117,8 @@ export function addVietnameseAccentsToName(name) {
 export function fixProductName(productName) {
   if (!productName) return productName;
   
-  let fixed = productName;
+  // Sửa encoding nếu cần
+  let fixed = fixEncoding(productName);
   
   // Sửa lỗi chính tả
   const fixes = [

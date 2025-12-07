@@ -22,9 +22,21 @@ app.set('views', path.resolve(__dirname, '..', 'views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Debug middleware - log all API requests
-app.use('/api/etl', (req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+// Set UTF-8 charset cho tất cả JSON responses
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(data) {
+    res.charset = 'utf-8';
+    if (!res.getHeader('Content-Type')) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    } else {
+      const contentType = res.getHeader('Content-Type');
+      if (typeof contentType === 'string' && !contentType.includes('charset')) {
+        res.setHeader('Content-Type', `${contentType}; charset=utf-8`);
+      }
+    }
+    return originalJson.call(this, data);
+  };
   next();
 });
 
@@ -45,6 +57,7 @@ app.get('/health', (req, res) => {
 // Root route - render EJS template
 app.get('/', (req, res) => {
   try {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.render('pages/index');
   } catch (error) {
     console.error('Error rendering index page:', error);

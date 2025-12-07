@@ -70,36 +70,6 @@ export class LookupService {
   }
 
   /**
-   * Tạo Map từ array để lookup nhanh (deprecated - giữ lại để backward compatibility)
-   */
-  createStoreMap(stores) {
-    const map = new Map();
-    stores.forEach(s => {
-      const key = this.normalizeStoreCode(s.store_code);
-      if (key) map.set(key, s);
-    });
-    return map;
-  }
-
-  createCustomerMap(customers) {
-    const map = new Map();
-    customers.forEach(c => {
-      const key = this.normalizePhone(c.phone);
-      if (key) map.set(key, c);
-    });
-    return map;
-  }
-
-  createProductMap(products) {
-    const map = new Map();
-    products.forEach(p => {
-      const key = this.normalizeSku(p.sku);
-      if (key) map.set(key, p);
-    });
-    return map;
-  }
-
-  /**
    * Enrich một row dữ liệu với thông tin từ các bảng tham chiếu
    */
   enrichRow(row) {

@@ -1,4 +1,4 @@
-import { upsertAndGetId, paginateQuery, queryWithFilters } from '../utils/dbHelpers.js';
+import { upsertAndGetId, paginateQuery, queryWithFilters, ensureUtf8Charset } from '../utils/dbHelpers.js';
 
 /**
  * Model để tương tác với new_db (Data Warehouse)
@@ -28,6 +28,7 @@ export class NewDbModel {
    */
   async upsertStore(storeCode, storeName) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     
     // Nếu storeName là null/undefined, chỉ insert store_code
     if (storeName === null || storeName === undefined) {
@@ -49,6 +50,7 @@ export class NewDbModel {
       );
     }
     
+    await ensureUtf8Charset(pool);
     const [rows] = await pool.query('SELECT id FROM stores WHERE store_code = ?', [storeCode]);
     return rows[0].id;
   }
@@ -62,6 +64,7 @@ export class NewDbModel {
    */
   async upsertCustomer(phone, fullName = null, email = null) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await upsertAndGetId(
       pool,
       'customers',
@@ -81,6 +84,7 @@ export class NewDbModel {
    */
   async upsertProduct(sku, productName, category = null) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await upsertAndGetId(
       pool,
       'products',
@@ -101,6 +105,7 @@ export class NewDbModel {
    */
   async upsertOrder(orderCode, storeId, customerId, orderDatetime) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await upsertAndGetId(
       pool,
       'orders',
@@ -114,6 +119,7 @@ export class NewDbModel {
   // Order Items
   async insertOrderItem(orderId, productId, qty, unitPrice, currency = 'VND') {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [result] = await pool.query(
       `INSERT INTO order_items (order_id, product_id, qty, unit_price, currency)
        VALUES (?, ?, ?, ?, ?)`,
@@ -125,6 +131,7 @@ export class NewDbModel {
   // ETL Logs
   async insertLog(sourceTable, sourceType, recordId, orderCode, status, message, errorDetails = null) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [result] = await pool.query(
       `INSERT INTO etl_logs (source_table, source_type, record_id, order_code, status, message, error_details)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -136,6 +143,7 @@ export class NewDbModel {
   // Get stats
   async getStats() {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [stores] = await pool.query('SELECT COUNT(*) as count FROM stores');
     const [customers] = await pool.query('SELECT COUNT(*) as count FROM customers');
     const [products] = await pool.query('SELECT COUNT(*) as count FROM products');
@@ -162,6 +170,7 @@ export class NewDbModel {
    */
   async getLogs(limit = 100, offset = 0, status = null) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await queryWithFilters(
       pool,
       'SELECT * FROM etl_logs',
@@ -175,6 +184,7 @@ export class NewDbModel {
   // Get all stores (for batch lookup)
   async getAllStores() {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [rows] = await pool.query('SELECT * FROM stores');
     return rows;
   }
@@ -182,6 +192,7 @@ export class NewDbModel {
   // Get all customers (for batch lookup)
   async getAllCustomers() {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [rows] = await pool.query('SELECT * FROM customers');
     return rows;
   }
@@ -189,6 +200,7 @@ export class NewDbModel {
   // Get all products (for batch lookup)
   async getAllProducts() {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     const [rows] = await pool.query('SELECT * FROM products');
     return rows;
   }
@@ -201,6 +213,7 @@ export class NewDbModel {
    */
   async getStores(limit = 100, offset = 0) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await paginateQuery(
       pool,
       'SELECT * FROM stores ORDER BY id DESC',
@@ -219,6 +232,7 @@ export class NewDbModel {
    */
   async getCustomers(limit = 100, offset = 0) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await paginateQuery(
       pool,
       'SELECT * FROM customers ORDER BY id DESC',
@@ -237,6 +251,7 @@ export class NewDbModel {
    */
   async getProducts(limit = 100, offset = 0) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await paginateQuery(
       pool,
       'SELECT * FROM products ORDER BY id DESC',
@@ -255,9 +270,10 @@ export class NewDbModel {
    */
   async getOrders(limit = 100, offset = 0) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await paginateQuery(
       pool,
-      `SELECT o.*, s.store_name, c.full_name as customer_name, c.phone as customer_phone
+      `SELECT o.*, s.store_code, s.store_name, c.full_name as customer_name, c.phone as customer_phone
        FROM orders o
        LEFT JOIN stores s ON o.store_id = s.id
        LEFT JOIN customers c ON o.customer_id = c.id
@@ -277,6 +293,7 @@ export class NewDbModel {
    */
   async getOrderItems(limit = 100, offset = 0) {
     const pool = await this.pool;
+    await ensureUtf8Charset(pool);
     return await paginateQuery(
       pool,
       `SELECT oi.*, o.order_code, p.product_name, p.sku

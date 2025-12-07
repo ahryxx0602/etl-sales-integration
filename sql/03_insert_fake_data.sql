@@ -4,6 +4,9 @@
 -- File này chứa nhiều dữ liệu fake với các lỗi để test validation và transform
 -- Bao gồm: sai chính tả, định dạng tiền tệ sai, định dạng ngày tháng sai, số lượng sai
 
+-- Đảm bảo encoding UTF-8 khi insert dữ liệu tiếng Việt
+SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';
+
 USE old_db;
 
 -- =========================
@@ -288,7 +291,66 @@ INSERT INTO old_order_items (order_code, item_sku, item_name, qty, unit_price, c
 ('ORD029', 'SKU027', 'LapTop HP Pavilion', '1.2', '18.000.000', 'vnd'),  -- Tên sai + Số lượng thập phân + Tiền có dấu chấm + Currency chữ thường
 ('ORD030', 'SKU028', 'Điện Thoại Xiaomi', 'two', '8,500,000', 'USD');  -- Tên sai + Số lượng chữ + Tiền có dấu phẩy + Currency sai
 
-SELECT 'Fake data inserted successfully!' AS result;
+-- =========================
+-- 6. INSERT STORES TỪ CSV (Mapping data)
+-- =========================
+-- Thêm stores từ CSV để lookup service có thể tìm thấy store_name
+-- Các store_code từ CSV: DN01, DN02, DN03, QN01, QN02, QN03, QN04
+
+-- Thêm stores Đà Nẵng (DN)
+INSERT INTO old_stores (store_code, store_name, address) VALUES
+('DN01', 'Cửa hàng Đà Nẵng 1', '123 Đường ABC, Đà Nẵng'),
+('DN02', 'Cửa hàng Đà Nẵng 2', '456 Đường XYZ, Đà Nẵng'),
+('DN03', 'Cửa hàng Đà Nẵng 3', '789 Đường DEF, Đà Nẵng')
+ON DUPLICATE KEY UPDATE 
+    store_name = VALUES(store_name),
+    address = VALUES(address);
+
+-- Thêm stores Quy Nhơn (QN)
+INSERT INTO old_stores (store_code, store_name, address) VALUES
+('QN01', 'Cửa hàng Quy Nhơn 1', '111 Đường GHI, Quy Nhơn'),
+('QN02', 'Cửa hàng Quy Nhơn 2', '222 Đường JKL, Quy Nhơn'),
+('QN03', 'Cửa hàng Quy Nhơn 3', '333 Đường MNO, Quy Nhơn'),
+('QN04', 'Cửa hàng Quy Nhơn 4', '444 Đường PQR, Quy Nhơn')
+ON DUPLICATE KEY UPDATE 
+    store_name = VALUES(store_name),
+    address = VALUES(address);
+
+-- =========================
+-- 7. INSERT CUSTOMERS TỪ CSV (Mapping data)
+-- =========================
+-- Thêm customers từ CSV để lookup service có thể tìm thấy customer_name
+-- Các phone từ CSV: 0905123456, 0905345678, 0911111111, 0938888888, 0939999999, 
+-- 0922222222, 0977777777, 0966666666, 0935000111, 0933332222,
+-- 0905000000, 0913334444, 0912000111, 0931112222, 0937778888,
+-- 0978889999, 0934447777
+
+INSERT INTO old_customers (phone, full_name, email) VALUES
+('0905123456', 'Nguyễn Văn A', 'nguyenvana@email.com'),
+('0905345678', 'Trần Thị B', 'tranthib@email.com'),
+('0911111111', 'Lê Văn C', 'levanc@email.com'),
+('0938888888', 'Phạm Thị D', 'phamthid@email.com'),
+('0939999999', 'Hoàng Văn E', 'hoangvane@email.com'),
+('0922222222', 'Vũ Thị F', 'vuthif@email.com'),
+('0977777777', 'Đỗ Văn G', 'dovang@email.com'),
+('0966666666', 'Bùi Thị H', 'buithih@email.com'),
+('0935000111', 'Đinh Văn I', 'dinhvani@email.com'),
+('0933332222', 'Ngô Thị K', 'ngothik@email.com'),
+('0905000000', 'Lý Văn L', 'lyvanl@email.com'),
+('0913334444', 'Trương Thị M', 'truongthim@email.com'),
+('0912000111', 'Đặng Văn N', 'dangvann@email.com'),
+('0931112222', 'Võ Thị O', 'vothio@email.com'),
+('0937778888', 'Phan Văn P', 'phanvanp@email.com'),
+('0978889999', 'Lưu Thị Q', 'luuthiq@email.com'),
+('0934447777', 'Hồ Văn R', 'hovanr@email.com')
+ON DUPLICATE KEY UPDATE 
+    full_name = COALESCE(full_name, VALUES(full_name)),
+    email = COALESCE(email, VALUES(email));
+
+-- =========================
+-- SUMMARY
+-- =========================
+SELECT 'Fake data and CSV mapping data inserted successfully!' AS result;
 SELECT CONCAT('Total stores: ', COUNT(*)) AS summary FROM old_stores;
 SELECT CONCAT('Total customers: ', COUNT(*)) AS summary FROM old_customers;
 SELECT CONCAT('Total products: ', COUNT(*)) AS summary FROM old_products;

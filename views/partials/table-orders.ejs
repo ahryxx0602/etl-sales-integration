@@ -40,8 +40,28 @@
                             <tr>
                                 <td x-text="order.id"></td>
                                 <td x-text="order.order_code || '-'"></td>
-                                <td x-text="order.store_name || '-'"></td>
-                                <td x-text="order.customer_name || order.customer_phone || '-'"></td>
+                                <td>
+                                    <template x-if="order.store_name">
+                                        <span x-text="order.store_name"></span>
+                                    </template>
+                                    <template x-if="!order.store_name && order.store_code">
+                                        <span style="color: #666; font-style: italic;" x-text="'Mã: ' + order.store_code"></span>
+                                    </template>
+                                    <template x-if="!order.store_name && !order.store_code">
+                                        <span>-</span>
+                                    </template>
+                                </td>
+                                <td>
+                                    <template x-if="order.customer_name">
+                                        <span x-text="order.customer_name"></span>
+                                    </template>
+                                    <template x-if="!order.customer_name && order.customer_phone">
+                                        <span style="color: #666; font-style: italic;" x-text="'SĐT: ' + order.customer_phone"></span>
+                                    </template>
+                                    <template x-if="!order.customer_name && !order.customer_phone">
+                                        <span>-</span>
+                                    </template>
+                                </td>
                                 <td x-text="formatDate(order.order_datetime)"></td>
                             </tr>
                         </template>

@@ -13,6 +13,9 @@ export async function getOldDbPool() {
       connectionLimit: 10,
       queueLimit: 0,
     });
+    
+    // Không cần event handler vì ensureUtf8Charset() đã được gọi trước mỗi query
+    // trong OldDbModel và dbHelpers
   }
   return oldDbPool;
 }
@@ -26,6 +29,9 @@ export async function getNewDbPool() {
       connectionLimit: 10,
       queueLimit: 0,
     });
+    
+    // Không cần event handler vì ensureUtf8Charset() đã được gọi trước mỗi query
+    // trong NewDbModel và dbHelpers
   }
   return newDbPool;
 }

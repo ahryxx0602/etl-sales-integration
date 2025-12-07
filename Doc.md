@@ -207,31 +207,61 @@ Vì vậy cần một hệ thống ETL (Extract – Transform – Load) để go
 
 Chuẩn hóa dữ liệu là bước quan trọng nhằm đưa dữ liệu từ nhiều nguồn khác nhau về cùng một tiêu chuẩn chung. Mục tiêu của chuẩn hóa là đảm bảo dữ liệu sạch, nhất quán và có thể phân tích được trong Data Warehouse.
 
+**Lưu ý quan trọng**: Hệ thống tự động normalize dữ liệu **TRƯỚC KHI validate** để sửa các lỗi format có thể sửa được. Điều này giúp giảm số lượng validation errors và tăng tỷ lệ dữ liệu được load thành công.
+
 #### 2.5.1. Các nội dung chuẩn hóa trong đề tài gồm:
 
 ##### Chuẩn hóa định dạng ngày tháng
 
 Nguồn POS, Website, Import có thể dùng nhiều format:
-- `DD/MM/YYYY`
-- `YYYY-MM-DD`
-- `DD.MM.YYYY`
-- `YYYY/MM/DD`
+- `DD/MM/YYYY` hoặc `DD/MM/YYYY HH:mm:ss`
+- `DD-MM-YYYY` hoặc `DD-MM-YYYY HH:mm:ss`
+- `YYYY-MM-DD` hoặc `YYYY-MM-DD HH:mm:ss`
+- `YYYY/MM/DD` hoặc `YYYY/MM/DD HH:mm:ss`
+- `DD.MM.YYYY` hoặc `DD.MM.YYYY HH:mm:ss`
+- `MM-DD-YYYY` (format Mỹ)
+- ISO format (default Date parsing)
 
-**Hệ thống chuẩn hóa về format chuẩn ISO: `YYYY-MM-DD`**
+**Hệ thống tự động parse nhiều format và chuẩn hóa về MySQL datetime: `YYYY-MM-DD HH:mm:ss`**
 
-##### Chuẩn hóa dữ liệu tiền tệ
+**Files liên quan:**
+- `src/utils/dateUtils.js` - Hàm `validateAndParseDate()` hỗ trợ nhiều format
+- `src/services/validation/OrderValidationService.js` - Sử dụng dateUtils để parse
 
-Một số bản ghi chứa ký hiệu:
-- `1.200.000đ`
-- `$50`
-- `100 EUR`
-- `¥1200`
+##### Chuẩn hóa dữ liệu tiền tệ và giá
 
-**Normalize thành:**
-- `value`: Số nguyên hoặc số thập phân chuẩn
-- `currency`: Loại tiền tệ (VND, USD, EUR, JPY…)
+**Price Normalization:**
+- Loại bỏ dấu chấm/phẩy phân cách: `22.000.000` → `22000000`, `15,000,000` → `15000000`
+- Convert string → number
+- Làm tròn về số nguyên
 
-Sau đó convert về VND dựa trên bảng tỷ giá mặc định.
+**Currency Normalization:**
+- Chuẩn hóa currency code: `vnd` → `VND`, `vnđ` → `VND`, `usd` → `USD`
+- Default: `VND` nếu không có
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Hàm `normalizePrice()` và `normalizeCurrency()`
+- `src/services/TransformService.js` - Normalize trước khi validate
+
+##### Chuẩn hóa số lượng (Quantity)
+
+- Chuyển chữ thành số: `'two'` → `2`, `'three'` → `3`
+- Làm tròn số thập phân: `'1.5'` → `2`, `'2.3'` → `2`
+- Loại bỏ ký tự không phải số
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Hàm `normalizeQty()`
+- `src/services/TransformService.js` - Normalize trước khi validate
+
+##### Chuẩn hóa Email
+
+- Sửa email thiếu TLD: `'tranthihoa@email'` → `'tranthihoa@email.com'`
+- Loại bỏ khoảng trắng
+- Chuyển thành chữ thường
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Hàm `normalizeEmail()`
+- `src/services/TransformService.js` - Normalize trước khi validate
 
 ##### Chuẩn hóa SKU (Mã sản phẩm)
 
@@ -244,24 +274,34 @@ Sau đó convert về VND dựa trên bảng tỷ giá mặc định.
 - Loại bỏ khoảng trắng dư thừa
 - Loại bỏ ký tự không hợp lệ
 - Giới hạn 100 ký tự
-- Sửa dấu tiếng Việt
+- Sửa dấu tiếng Việt và lỗi chính tả (Bluetoth → Bluetooth, logtech → Logitech)
+
+**Files liên quan:**
+- `src/utils/vietnameseUtils.js` - Hàm `fixProductName()`
 
 ##### Chuẩn hóa số lượng, giá trị đơn hàng
 
 - Convert chuỗi → số
-- Tự sửa các lỗi người dùng nhập như: `1,000` → `1000`
+- Tự sửa các lỗi người dùng nhập như: `1,000` → `1000`, `22.000.000` → `22000000`
+- Chuyển chữ thành số: `'two'` → `2`
 
-**Kết quả**: Dữ liệu đầu vào từ nhiều nguồn trở nên đồng nhất – dễ phân tích – ít lỗi khi load vào DW.
+**Kết quả**: Dữ liệu đầu vào từ nhiều nguồn trở nên đồng nhất – dễ phân tích – ít lỗi khi load vào DW. Hệ thống tự động sửa các lỗi format phổ biến, giảm đáng kể số lượng validation errors.
 
 ### 2.6. Kiểm tra và xác thực dữ liệu (Data Validation)
 
 Validation là bước đảm bảo dữ liệu đúng – đầy đủ – hợp lệ trước khi đi vào Transform.
 
+**Quy trình:**
+1. **Normalize dữ liệu trước** (tự động sửa các lỗi format có thể sửa được)
+2. **Validate dữ liệu đã normalize** (kiểm tra tính hợp lệ)
+3. **Transform dữ liệu đã validate** (chuẩn hóa format, sửa dấu tiếng Việt)
+
 Trong đề tài, validation dựa trên:
-- **Joi Schema**
-- **Custom Validation Services**
-- **Regex**
-- **Rule logic thủ công**
+- **Data Normalizers** - Tự động normalize dữ liệu trước khi validate
+- **Joi Schema** - Validate toàn bộ cấu trúc dữ liệu
+- **Custom Validation Services** - Validate từng field chi tiết
+- **Regex** - Validate format (email, phone)
+- **Rule logic thủ công** - Validate giá trị (qty > 0, price > 0)
 
 #### 2.6.1. Các nhóm validation chính
 
@@ -487,7 +527,22 @@ Dòng dữ liệu sẽ bị đánh dấu là invalid (không được load vào 
 
 #### 3.4.1. Quy tắc Transform
 
-Transform được thực hiện cùng lúc với Validation trong method `transformOrderData()` của `TransformService`. Mỗi field được validate trước khi transform. Nếu validation fail, field đó không được transform và error được collect.
+Transform được thực hiện cùng lúc với Validation trong method `transformOrderData()` của `TransformService`. 
+
+**Quy trình:**
+1. **Normalize dữ liệu trước khi validate** (tự động sửa các lỗi format):
+   - `unit_price`: Loại bỏ dấu chấm/phẩy (`22.000.000` → `22000000`)
+   - `qty`: Chuyển chữ thành số (`two` → `2`), làm tròn số thập phân
+   - `customer_email`: Sửa email thiếu TLD (`tranthihoa@email` → `tranthihoa@email.com`)
+   - `currency`: Chuẩn hóa currency (`vnd` → `VND`)
+2. **Validate dữ liệu đã normalize** (kiểm tra tính hợp lệ)
+3. **Transform dữ liệu đã validate** (chuẩn hóa format, sửa dấu tiếng Việt)
+
+Mỗi field được normalize trước, sau đó validate, rồi mới transform. Nếu validation fail, field đó không được transform và error được collect.
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Các hàm normalize: `normalizeQty()`, `normalizePrice()`, `normalizeEmail()`, `normalizeCurrency()`
+- `src/services/TransformService.js` - Method `transformOrderData()` gọi normalize trước khi validate
 
 ##### Chuẩn hoá ngày (Date Normalization)
 
@@ -511,13 +566,17 @@ Transform được thực hiện cùng lúc với Validation trong method `trans
 
 ##### Chuẩn hoá giá (Price Normalization)
 
-- **Input**: String có thể chứa dấu phẩy (`,`) như `"15,000,000"` hoặc `"15.000.000"`
+- **Input**: String có thể chứa dấu phẩy (`,`) hoặc dấu chấm (`.`) như `"15,000,000"`, `"22.000.000"`, `"15.000.000"`
 - **Process**: 
-  - Loại bỏ dấu phẩy (`,`)
-  - Convert sang number (parseFloat)
+  - **Normalize trước**: Sử dụng `normalizePrice()` để loại bỏ tất cả dấu chấm/phẩy
+  - Convert sang number (parseInt)
   - Làm tròn về số nguyên (Math.round)
 - **Output**: Number (integer)
-- **Validation**: Sử dụng `ProductValidationService.validatePrice()`
+- **Validation**: Sử dụng `ProductValidationService.validatePrice()` sau khi normalize
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Hàm `normalizePrice()` loại bỏ dấu chấm/phẩy
+- `src/services/TransformService.js` - Normalize price trước khi validate
 
 ##### Chuẩn hoá mã sản phẩm (SKU Normalization)
 
@@ -546,10 +605,19 @@ Transform được thực hiện cùng lúc với Validation trong method `trans
 
 ##### Chuẩn hoá số lượng (Quantity Normalization)
 
-- **Input**: String hoặc number (có thể là `"one"`, `"2.5"`, etc.)
-- **Process**: Convert sang number (parseInt) → Validate phải là số nguyên dương
+- **Input**: String hoặc number (có thể là `"one"`, `"two"`, `"2.5"`, etc.)
+- **Process**: 
+  - **Normalize trước**: Sử dụng `normalizeQty()` để:
+    - Chuyển chữ thành số (`'two'` → `2`)
+    - Làm tròn số thập phân (`'1.5'` → `2`)
+    - Loại bỏ ký tự không phải số
+  - Validate phải là số nguyên dương
 - **Output**: Number (integer > 0)
-- **Validation**: Sử dụng `ProductValidationService.validateQty()`
+- **Validation**: Sử dụng `ProductValidationService.validateQty()` sau khi normalize
+
+**Files liên quan:**
+- `src/utils/dataNormalizers.js` - Hàm `normalizeQty()` chuyển chữ thành số, làm tròn
+- `src/services/TransformService.js` - Normalize qty trước khi validate
 
 #### 3.4.2. Các LỚP / MODULE liên quan
 
@@ -656,11 +724,15 @@ Hệ thống cung cấp SQL scripts để tạo toàn bộ cấu trúc database:
 - `sql/00_setup_all.sql` - Script master tạo cả old_db và new_db
 - `sql/01_create_old_db.sql` - Tạo old_db và tables
 - `sql/02_create_new_db.sql` - Tạo new_db và tables (Star Schema)
-- `sql/03_insert_fake_data.sql` - Insert fake data với nhiều lỗi để test
+- `sql/03_insert_fake_data.sql` - Insert fake data với nhiều lỗi để test + mapping data từ CSV
 - `sql/04_migrate_etl_logs.sql` - Migration cho etl_logs
 - `sql/05_utility_truncate.sql` - Utility để truncate new_db
+- `sql/06_utility_truncate_old_db.sql` - Utility để truncate old_db
 
-**Lưu ý**: Xem `sql/README.md` để biết chi tiết về cách sử dụng các scripts.
+**Lưu ý**: 
+- File `sql/03_insert_fake_data.sql` đã bao gồm cả mapping data từ CSV (stores và customers) để đảm bảo CSV data có thể lookup được.
+- Sử dụng PowerShell scripts (`setup-databases.ps1`, `run-sql.ps1`, `etl-utils.ps1`) để dễ dàng setup và quản lý databases trên Windows.
+- Xem `sql/README.md` để biết chi tiết về cách sử dụng các scripts.
 
 #### Tối ưu hiệu suất
 
@@ -869,6 +941,11 @@ Mỗi service có thể được phát triển và triển khai độc lập.
 ### 5.3. Hệ thống xử lý dữ liệu sạch
 
 - **100% dữ liệu được validate**: Tất cả dữ liệu đều được kiểm tra kỹ lưỡng trước khi transform và load.
+- **Tự động normalize dữ liệu trước khi validate**: 
+  - **Price**: Loại bỏ dấu chấm/phẩy (`22.000.000` → `22000000`)
+  - **Quantity**: Chuyển chữ thành số (`two` → `2`), làm tròn số thập phân
+  - **Email**: Sửa email thiếu TLD (`tranthihoa@email` → `tranthihoa@email.com`)
+  - **Currency**: Chuẩn hóa currency (`vnd` → `VND`)
 - **Chuẩn hóa ngày, SKU, sản phẩm, tiền tệ**: 
   - Ngày: Parse nhiều formats → Format về MySQL datetime `YYYY-MM-DD HH:mm:ss`
   - SKU: Uppercase
@@ -876,6 +953,7 @@ Mỗi service có thể được phát triển và triển khai độc lập.
   - Tiền tệ: Uppercase, loại bỏ dấu phẩy, làm tròn
 - **Upsert mechanism**: Loại bỏ các bản ghi trùng lặp thông qua upsert với unique keys.
 - **Vietnamese text handling**: Tự động sửa dấu tiếng Việt cho tên người, tên sản phẩm, category.
+- **Giảm validation errors**: Normalize tự động giúp giảm đáng kể số lượng validation errors, tăng tỷ lệ dữ liệu được load thành công.
 
 ### 5.4. Xây dựng Database hoàn chỉnh
 
