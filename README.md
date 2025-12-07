@@ -60,7 +60,7 @@ Hệ thống ETL (Extract, Transform, Load) được xây dựng để xử lý 
 
 ```bash
 git clone https://github.com/ahryxx0602/etl-sales-integration.git
-cd etl-rmq
+cd etl-sales-integration
 ```
 
 ### Bước 2: Cài đặt dependencies
@@ -71,7 +71,7 @@ npm install
 
 ### Bước 3: Cấu hình môi trường
 
-Tạo file `.env` trong thư mục `etl-rmq`:
+Tạo file `.env` trong thư mục `etl-sales-integration`:
 
 ```env
 # MySQL Database Configuration
@@ -365,7 +365,7 @@ Web Dashboard cung cấp:
 ## 📁 Cấu trúc thư mục
 
 ```
-etl-rmq/
+etl-sales-integration/
 ├── src/
 │   ├── config/          # Cấu hình
 │   ├── models/          # Data Access Layer
@@ -530,5 +530,5 @@ ISC
 
 ---
 
-**Lưu ý**: Đảm bảo chạy các lệnh từ thư mục `etl-rmq`, không phải thư mục `DoAn`.
+**Lưu ý**: Đảm bảo chạy các lệnh từ thư mục `etl-sales-integration`, không phải thư mục `DoAn`.
 
