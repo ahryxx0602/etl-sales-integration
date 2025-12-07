@@ -1,0 +1,25 @@
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'process' }"
+            @click="switchTab('process')">Xử lý dữ liệu</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'stores' }"
+            @click="switchTab('stores')">Cửa hàng</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'customers' }"
+            @click="switchTab('customers')">Khách hàng</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'products' }"
+            @click="switchTab('products')">Sản phẩm</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'orders' }"
+            @click="switchTab('orders')">Đơn hàng</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'orderItems' }"
+            @click="switchTab('orderItems')">Chi tiết đơn hàng</button>
+    <button class="tab-btn" 
+            :class="{ active: activeTab === 'logs' }"
+            @click="switchTab('logs')">Logs</button>
+</div>
+

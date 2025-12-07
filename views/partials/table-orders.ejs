@@ -1,0 +1,73 @@
+<!-- Tab Content: Orders -->
+<div class="tab-content" :class="{ active: activeTab === 'orders' }" x-show="activeTab === 'orders'">
+    <div class="data-section">
+        <h2>Đơn hàng</h2>
+        <div class="filters">
+            <button class="btn-secondary" @click="loadTable('orders')">Làm mới</button>
+            <span class="total-count">Tổng: <span x-text="orders.total || 0"></span></span>
+            <select class="page-size-select" 
+                    :value="orders.pageSize"
+                    @change="changePageSize('orders', $event.target.value)">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Mã đơn hàng</th>
+                        <th>Cửa hàng</th>
+                        <th>Khách hàng</th>
+                        <th>Thời gian đặt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="orders.loading">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Đang tải...</td></tr>
+                    </template>
+                    <template x-if="!orders.loading && orders.error">
+                        <tr><td colspan="5" style="color: red; padding: 20px;" x-text="'Lỗi: ' + orders.error"></td></tr>
+                    </template>
+                    <template x-if="!orders.loading && !orders.error && orders.data.length === 0">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
+                    </template>
+                    <template x-if="!orders.loading && !orders.error && orders.data.length > 0">
+                        <template x-for="order in orders.data" :key="order.id">
+                            <tr>
+                                <td x-text="order.id"></td>
+                                <td x-text="order.order_code || '-'"></td>
+                                <td x-text="order.store_name || '-'"></td>
+                                <td x-text="order.customer_name || order.customer_phone || '-'"></td>
+                                <td x-text="formatDate(order.order_datetime)"></td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" x-show="getPaginationInfo('orders')">
+            <template x-if="getPaginationInfo('orders')">
+                <div>
+                    <button @click="goToPage('orders', orders.page - 1)" 
+                            :disabled="!getPaginationInfo('orders').hasPrev">‹ Trước</button>
+                    <template x-for="page in Array.from({length: getPaginationInfo('orders').endPage - getPaginationInfo('orders').startPage + 1}, (_, i) => getPaginationInfo('orders').startPage + i)" :key="page">
+                        <button @click="goToPage('orders', page)" 
+                                :class="{ active: page === orders.page }"
+                                x-text="page"></button>
+                    </template>
+                    <button @click="goToPage('orders', orders.page + 1)" 
+                            :disabled="!getPaginationInfo('orders').hasNext">Sau ›</button>
+                    <span class="page-info">
+                        Trang <span x-text="orders.page"></span> / <span x-text="getPaginationInfo('orders').totalPages"></span>
+                        (<span x-text="getPaginationInfo('orders').startItem"></span>-<span x-text="getPaginationInfo('orders').endItem"></span> / <span x-text="orders.total"></span>)
+                    </span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+

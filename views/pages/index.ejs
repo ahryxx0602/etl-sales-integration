@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Dashboard - Hệ thống xử lý dữ liệu</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <div class="container" x-data="etlApp" x-init="init()">
+        <%- include('../partials/header') %>
+        <%- include('../partials/stats') %>
+        <%- include('../partials/tabs') %>
+        
+        <!-- Tab Contents -->
+        <%- include('../partials/process-section') %>
+        <%- include('../partials/table-stores') %>
+        <%- include('../partials/table-customers') %>
+        <%- include('../partials/table-products') %>
+        <%- include('../partials/table-orders') %>
+        <%- include('../partials/table-order-items') %>
+        <%- include('../partials/table-logs') %>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/assets/js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

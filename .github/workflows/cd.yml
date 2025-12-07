@@ -1,0 +1,40 @@
+name: CD - Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Find project root
+        run: |
+          if [ -f "package.json" ]; then
+            echo "PROJECT_ROOT=." >> $GITHUB_ENV
+          elif [ -f "etl-rmq/package.json" ]; then
+            echo "PROJECT_ROOT=etl-rmq" >> $GITHUB_ENV
+          else
+            echo "package.json not found"
+            exit 1
+          fi
+      
+      - name: Install dependencies
+        run: cd ${{ env.PROJECT_ROOT }} && npm ci --production
+      
+      - name: Create deployment package
+        run: |
+          cd ${{ env.PROJECT_ROOT }}
+          tar -czf ../deploy.tar.gz --exclude='node_modules' --exclude='.git' --exclude='*.log' .

@@ -1,0 +1,52 @@
+<!-- Tab Content: Process -->
+<div class="tab-content" :class="{ active: activeTab === 'process' }" x-show="activeTab === 'process'">
+    <div class="process-section">
+        <h2>Xử lý dữ liệu ETL</h2>
+        
+        <div class="process-actions">
+            <div class="action-card">
+                <h3>Xử lý dữ liệu</h3>
+                <p>Đọc dữ liệu từ CSV files và Old Database, validate và chuyển vào New Database qua RabbitMQ</p>
+                <button class="btn-primary" @click="processData()" :disabled="processing">
+                    <span x-show="!processing">Chạy ETL</span>
+                    <span x-show="processing">Đang xử lý...</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="result-area" x-show="processResult">
+            <template x-if="processResult && !processResult.error">
+                <div class="message success">
+                    <h3>Xử lý hoàn tất!</h3>
+                    <template x-if="processResult.csv">
+                        <div>
+                            <h4>Kết quả từ CSV Files:</h4>
+                            <p>Số file đã xử lý: <span x-text="processResult.csv.filesProcessed || 0"></span></p>
+                            <p>Extracted: <span x-text="processResult.csv.totalExtracted || 0"></span></p>
+                            <p>Valid: <span x-text="processResult.csv.totalValid || 0"></span></p>
+                            <p>Invalid: <span x-text="processResult.csv.totalInvalid || 0"></span></p>
+                            <p>Loaded: <span x-text="processResult.csv.totalLoaded || 0"></span></p>
+                            <p>Errors: <span x-text="processResult.csv.totalErrors || 0"></span></p>
+                        </div>
+                    </template>
+                    <template x-if="processResult.oldDb">
+                        <div>
+                            <h4>Kết quả từ Old Database:</h4>
+                            <p>Extracted: <span x-text="processResult.oldDb.extracted || 0"></span></p>
+                            <p>Valid: <span x-text="processResult.oldDb.valid || 0"></span></p>
+                            <p>Invalid: <span x-text="processResult.oldDb.invalid || 0"></span></p>
+                            <p>Loaded: <span x-text="processResult.oldDb.loaded || 0"></span></p>
+                            <p>Errors: <span x-text="processResult.oldDb.errors || 0"></span></p>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template x-if="processResult && processResult.error">
+                <div class="message error">
+                    <p x-text="processResult.error"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+

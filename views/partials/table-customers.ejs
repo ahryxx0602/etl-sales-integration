@@ -1,0 +1,71 @@
+<!-- Tab Content: Customers -->
+<div class="tab-content" :class="{ active: activeTab === 'customers' }" x-show="activeTab === 'customers'">
+    <div class="data-section">
+        <h2>Khách hàng</h2>
+        <div class="filters">
+            <button class="btn-secondary" @click="loadTable('customers')">Làm mới</button>
+            <span class="total-count">Tổng: <span x-text="customers.total || 0"></span></span>
+            <select class="page-size-select" 
+                    :value="customers.pageSize"
+                    @change="changePageSize('customers', $event.target.value)">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Số điện thoại</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="customers.loading">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Đang tải...</td></tr>
+                    </template>
+                    <template x-if="!customers.loading && customers.error">
+                        <tr><td colspan="4" style="color: red; padding: 20px;" x-text="'Lỗi: ' + customers.error"></td></tr>
+                    </template>
+                    <template x-if="!customers.loading && !customers.error && customers.data.length === 0">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
+                    </template>
+                    <template x-if="!customers.loading && !customers.error && customers.data.length > 0">
+                        <template x-for="customer in customers.data" :key="customer.id">
+                            <tr>
+                                <td x-text="customer.id"></td>
+                                <td x-text="customer.phone || '-'"></td>
+                                <td x-text="customer.full_name || '-'"></td>
+                                <td x-text="customer.email || '-'"></td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" x-show="getPaginationInfo('customers')">
+            <template x-if="getPaginationInfo('customers')">
+                <div>
+                    <button @click="goToPage('customers', customers.page - 1)" 
+                            :disabled="!getPaginationInfo('customers').hasPrev">‹ Trước</button>
+                    <template x-for="page in Array.from({length: getPaginationInfo('customers').endPage - getPaginationInfo('customers').startPage + 1}, (_, i) => getPaginationInfo('customers').startPage + i)" :key="page">
+                        <button @click="goToPage('customers', page)" 
+                                :class="{ active: page === customers.page }"
+                                x-text="page"></button>
+                    </template>
+                    <button @click="goToPage('customers', customers.page + 1)" 
+                            :disabled="!getPaginationInfo('customers').hasNext">Sau ›</button>
+                    <span class="page-info">
+                        Trang <span x-text="customers.page"></span> / <span x-text="getPaginationInfo('customers').totalPages"></span>
+                        (<span x-text="getPaginationInfo('customers').startItem"></span>-<span x-text="getPaginationInfo('customers').endItem"></span> / <span x-text="customers.total"></span>)
+                    </span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+

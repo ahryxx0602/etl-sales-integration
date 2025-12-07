@@ -1,0 +1,75 @@
+<!-- Tab Content: Logs -->
+<div class="tab-content" :class="{ active: activeTab === 'logs' }" x-show="activeTab === 'logs'">
+    <div class="data-section">
+        <h2>ETL Logs</h2>
+        <div class="filters">
+            <button class="btn-secondary" @click="loadTable('logs')">Làm mới</button>
+            <span class="total-count">Tổng: <span x-text="logs.total || 0"></span></span>
+            <select class="page-size-select" 
+                    :value="logs.pageSize"
+                    @change="changePageSize('logs', $event.target.value)">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Nguồn</th>
+                        <th>Loại</th>
+                        <th>Order Code</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="logs.loading">
+                        <tr><td colspan="6" style="text-align: center; padding: 40px;">Đang tải...</td></tr>
+                    </template>
+                    <template x-if="!logs.loading && logs.error">
+                        <tr><td colspan="6" style="color: red; padding: 20px;" x-text="'Lỗi: ' + logs.error"></td></tr>
+                    </template>
+                    <template x-if="!logs.loading && !logs.error && logs.data.length === 0">
+                        <tr><td colspan="6" style="text-align: center; padding: 40px;">Không có logs</td></tr>
+                    </template>
+                    <template x-if="!logs.loading && !logs.error && logs.data.length > 0">
+                        <template x-for="log in logs.data" :key="log.id || log.created_at">
+                            <tr>
+                                <td x-text="formatDate(log.created_at)"></td>
+                                <td x-text="log.source_table || '-'"></td>
+                                <td x-text="log.source_type || '-'"></td>
+                                <td x-text="log.order_code || '-'"></td>
+                                <td><span class="status-badge" :class="log.status || ''" x-text="log.status || '-'"></span></td>
+                                <td x-text="log.message || '-'"></td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" x-show="getPaginationInfo('logs')">
+            <template x-if="getPaginationInfo('logs')">
+                <div>
+                    <button @click="goToPage('logs', logs.page - 1)" 
+                            :disabled="!getPaginationInfo('logs').hasPrev">‹ Trước</button>
+                    <template x-for="page in Array.from({length: getPaginationInfo('logs').endPage - getPaginationInfo('logs').startPage + 1}, (_, i) => getPaginationInfo('logs').startPage + i)" :key="page">
+                        <button @click="goToPage('logs', page)" 
+                                :class="{ active: page === logs.page }"
+                                x-text="page"></button>
+                    </template>
+                    <button @click="goToPage('logs', logs.page + 1)" 
+                            :disabled="!getPaginationInfo('logs').hasNext">Sau ›</button>
+                    <span class="page-info">
+                        Trang <span x-text="logs.page"></span> / <span x-text="getPaginationInfo('logs').totalPages"></span>
+                        (<span x-text="getPaginationInfo('logs').startItem"></span>-<span x-text="getPaginationInfo('logs').endItem"></span> / <span x-text="logs.total"></span>)
+                    </span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+

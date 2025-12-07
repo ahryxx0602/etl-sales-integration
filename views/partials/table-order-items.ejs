@@ -1,0 +1,77 @@
+<!-- Tab Content: Order Items -->
+<div class="tab-content" :class="{ active: activeTab === 'orderItems' }" x-show="activeTab === 'orderItems'">
+    <div class="data-section">
+        <h2>Chi tiết đơn hàng</h2>
+        <div class="filters">
+            <button class="btn-secondary" @click="loadTable('orderItems')">Làm mới</button>
+            <span class="total-count">Tổng: <span x-text="orderItems.total || 0"></span></span>
+            <select class="page-size-select" 
+                    :value="orderItems.pageSize"
+                    @change="changePageSize('orderItems', $event.target.value)">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Mã đơn hàng</th>
+                        <th>Sản phẩm</th>
+                        <th>SKU</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Tiền tệ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="orderItems.loading">
+                        <tr><td colspan="7" style="text-align: center; padding: 40px;">Đang tải...</td></tr>
+                    </template>
+                    <template x-if="!orderItems.loading && orderItems.error">
+                        <tr><td colspan="7" style="color: red; padding: 20px;" x-text="'Lỗi: ' + orderItems.error"></td></tr>
+                    </template>
+                    <template x-if="!orderItems.loading && !orderItems.error && orderItems.data.length === 0">
+                        <tr><td colspan="7" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
+                    </template>
+                    <template x-if="!orderItems.loading && !orderItems.error && orderItems.data.length > 0">
+                        <template x-for="item in orderItems.data" :key="item.id">
+                            <tr>
+                                <td x-text="item.id"></td>
+                                <td x-text="item.order_code || '-'"></td>
+                                <td x-text="item.product_name || '-'"></td>
+                                <td x-text="item.sku || '-'"></td>
+                                <td x-text="item.qty || 0"></td>
+                                <td x-text="formatNumber(item.unit_price)"></td>
+                                <td x-text="item.currency || 'VND'"></td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" x-show="getPaginationInfo('orderItems')">
+            <template x-if="getPaginationInfo('orderItems')">
+                <div>
+                    <button @click="goToPage('orderItems', orderItems.page - 1)" 
+                            :disabled="!getPaginationInfo('orderItems').hasPrev">‹ Trước</button>
+                    <template x-for="page in Array.from({length: getPaginationInfo('orderItems').endPage - getPaginationInfo('orderItems').startPage + 1}, (_, i) => getPaginationInfo('orderItems').startPage + i)" :key="page">
+                        <button @click="goToPage('orderItems', page)" 
+                                :class="{ active: page === orderItems.page }"
+                                x-text="page"></button>
+                    </template>
+                    <button @click="goToPage('orderItems', orderItems.page + 1)" 
+                            :disabled="!getPaginationInfo('orderItems').hasNext">Sau ›</button>
+                    <span class="page-info">
+                        Trang <span x-text="orderItems.page"></span> / <span x-text="getPaginationInfo('orderItems').totalPages"></span>
+                        (<span x-text="getPaginationInfo('orderItems').startItem"></span>-<span x-text="getPaginationInfo('orderItems').endItem"></span> / <span x-text="orderItems.total"></span>)
+                    </span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+

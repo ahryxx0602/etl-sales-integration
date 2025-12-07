@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'ETL Dashboard - Hệ thống xử lý dữ liệu' %></title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <% if (typeof additionalCSS !== 'undefined' && additionalCSS.length > 0) { %>
+        <% additionalCSS.forEach(css => { %>
+            <link rel="stylesheet" href="<%= css %>">
+        <% }); %>
+    <% } %>
+</head>
+<body>
+    <div class="container" x-data="etlApp" x-init="init()">
+        <%- include('../partials/header') %>
+        <%- include('../partials/stats') %>
+        <%- include('../partials/tabs') %>
+        
+        <!-- Main Content -->
+        <%- typeof body !== 'undefined' ? body : '' %>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/assets/js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <% if (typeof additionalJS !== 'undefined' && additionalJS.length > 0) { %>
+        <% additionalJS.forEach(js => { %>
+            <script src="<%= js %>"></script>
+        <% }); %>
+    <% } %>
+</body>
+</html>
+

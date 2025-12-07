@@ -1,0 +1,71 @@
+<!-- Tab Content: Products -->
+<div class="tab-content" :class="{ active: activeTab === 'products' }" x-show="activeTab === 'products'">
+    <div class="data-section">
+        <h2>Sản phẩm</h2>
+        <div class="filters">
+            <button class="btn-secondary" @click="loadTable('products')">Làm mới</button>
+            <span class="total-count">Tổng: <span x-text="products.total || 0"></span></span>
+            <select class="page-size-select" 
+                    :value="products.pageSize"
+                    @change="changePageSize('products', $event.target.value)">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+                <option value="100">100 / trang</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>SKU</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="products.loading">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Đang tải...</td></tr>
+                    </template>
+                    <template x-if="!products.loading && products.error">
+                        <tr><td colspan="4" style="color: red; padding: 20px;" x-text="'Lỗi: ' + products.error"></td></tr>
+                    </template>
+                    <template x-if="!products.loading && !products.error && products.data.length === 0">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
+                    </template>
+                    <template x-if="!products.loading && !products.error && products.data.length > 0">
+                        <template x-for="product in products.data" :key="product.id">
+                            <tr>
+                                <td x-text="product.id"></td>
+                                <td x-text="product.sku || '-'"></td>
+                                <td x-text="product.product_name || '-'"></td>
+                                <td x-text="product.category || '-'"></td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" x-show="getPaginationInfo('products')">
+            <template x-if="getPaginationInfo('products')">
+                <div>
+                    <button @click="goToPage('products', products.page - 1)" 
+                            :disabled="!getPaginationInfo('products').hasPrev">‹ Trước</button>
+                    <template x-for="page in Array.from({length: getPaginationInfo('products').endPage - getPaginationInfo('products').startPage + 1}, (_, i) => getPaginationInfo('products').startPage + i)" :key="page">
+                        <button @click="goToPage('products', page)" 
+                                :class="{ active: page === products.page }"
+                                x-text="page"></button>
+                    </template>
+                    <button @click="goToPage('products', products.page + 1)" 
+                            :disabled="!getPaginationInfo('products').hasNext">Sau ›</button>
+                    <span class="page-info">
+                        Trang <span x-text="products.page"></span> / <span x-text="getPaginationInfo('products').totalPages"></span>
+                        (<span x-text="getPaginationInfo('products').startItem"></span>-<span x-text="getPaginationInfo('products').endItem"></span> / <span x-text="products.total"></span>)
+                    </span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
