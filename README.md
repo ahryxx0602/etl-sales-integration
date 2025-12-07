@@ -1,4 +1,4 @@
-# Hệ thống ETL - Xử lý và Chuẩn hóa Dữ liệu Bán hàng Đa nguồn
+# Hệ thống ETL và chuẩn hoá dữ liệu giao dịch bán hàng đa nguồn (CSV + database) cho cửa hàng thiết bị điện tử
 
 ## 📋 Tổng quan
 
